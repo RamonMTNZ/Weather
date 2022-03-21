@@ -7,38 +7,80 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class WeatherForecast {
 
-	public String getCityWeather(String city, Date datetime) throws IOException {
+	public String getCityWeather(String ciudad, Date fecha) throws IOException {
 
-		if (datetime == null) {
+
+		if (fecha == null) {
 			// Utilizamos fecha actual
-			datetime = new Date();
+			fecha = new Date();
 		}
-		Date fechaEn6Dias = new Date(new Date().getTime() + (1000 * 60 * 60 * 24 * 6));
-		boolean fechaEnRangoDePrediccion = (datetime.before(fechaEn6Dias));
-		if (fechaEnRangoDePrediccion) {
-			HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
-			HttpRequest request = requestFactory
-				.buildGetRequest(new GenericUrl("https://www.metaweather.com/api/location/search/?query=" + city));
-			String r = request.execute().parseAsString();
-			JSONArray array = new JSONArray(r);
-			String woe = array.getJSONObject(0).get("woeid").toString();
-			requestFactory = new NetHttpTransport().createRequestFactory();
-			request = requestFactory.buildGetRequest(new GenericUrl("https://www.metaweather.com/api/location/" + woe));
-			r = request.execute().parseAsString();
-			JSONArray results = new JSONObject(r).getJSONArray("consolidated_weather");
-			for (int i = 0; i < results.length(); i++) {
-				if (new SimpleDateFormat("yyyy-MM-dd").format(datetime)
-					.equals(results.getJSONObject(i).get("applicable_date").toString())) {
-					return results.getJSONObject(i).get("weather_state_name").toString();
+
+
+		if (fechaEsValida(fecha)) {
+			// Obtén el woe ID para localizar la ciudad y el enlace necesario para ver el clima
+			String enlaceCiudad = "https://www.metaweather.com/api/location/search/?query=";
+			String infoDeCiudad = devuelveStringDeEnlace(enlaceCiudad + ciudad);
+			if (infoDeCiudad.equals("[]")){
+				return "La ciudad que ha especificado no existe, compruebe que esté escrita correctamente.";
+			}
+			String woe = devuelveWoeId(infoDeCiudad);
+
+			// Usa el woe ID para obtener un array con la informacion del clima de la ciudad
+			String enlaceClima = "https://www.metaweather.com/api/location/";
+			String infoDeClima = devuelveStringDeEnlace(enlaceClima + woe);
+			JSONArray infoClimaArray = devuelveArrayJSONSegunCategoria(infoDeClima, "consolidated_weather");
+
+			// Busca la fecha dada por el usuario en el array y devueve el clima de esa fecha
+			for (int indice = 0; indice < infoClimaArray.length(); indice++) {
+				String fechaElementoIndice = infoClimaArray.getJSONObject(indice).get("applicable_date").toString();
+				if (fechasCoinciden(fecha, fechaElementoIndice)) {
+					return infoClimaArray.getJSONObject(indice).get("weather_state_name").toString();
 				}
 			}
 		}
+		else {
+			return "Por favor, seleccione una fecha a partir de hoy en los proximos 6 días.";
+		}
 		return "";
 	}
+
+	private boolean fechaEsValida(Date fecha){
+		// Comprueba que la fecha este en el rango de fechas que metaweather calcula el clima (6 días a partir de hoy)
+		Date fechaEn6Dias = new Date(new Date().getTime() + (1000 * 60 * 60 * 24 * 6));
+		return fecha.before(fechaEn6Dias);
+	}
+
+	private String devuelveStringDeEnlace(String enlace) throws IOException {
+		//Devuelve un string con la información del enlace
+		HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
+		HttpRequest request = requestFactory.buildGetRequest(new GenericUrl(enlace));
+		return request.execute().parseAsString();
+	}
+
+	private String devuelveWoeId(String infoDePagina){
+		// Devuelve el identificaor utilizado en metaweather para la ciudad
+		JSONArray array = new JSONArray(infoDePagina);
+		return array.getJSONObject(0).get("woeid").toString();
+	}
+
+	private JSONArray devuelveArrayJSONSegunCategoria(String info, String categoria){
+		// Devuelve la categoria pasada como parametro del array JSON del String pasado como parametro.
+		return new JSONObject(info).getJSONArray(categoria);
+	}
+
+	private boolean fechasCoinciden(Date fechaDada, String fechaArray) {
+		// Comprueba que una fecha String y una fecha en formato Date coincidan
+		return new SimpleDateFormat("yyyy-MM-dd").format(fechaDada).equals(fechaArray);
+	}
+
+
 }
 
