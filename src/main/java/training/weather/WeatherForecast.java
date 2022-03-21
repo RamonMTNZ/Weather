@@ -13,6 +13,7 @@ import org.json.JSONObject;
 public class WeatherForecast {
 
 	public String getCityWeather(String city, Date datetime) throws IOException {
+
 		if (datetime == null) {
 			// Utilizamos fecha actual
 			datetime = new Date();
