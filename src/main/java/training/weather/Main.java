@@ -10,5 +10,9 @@ public class Main {
         System.out.println(forecast + " is the weather");
     }
 
+    public void a(){
+        System.out.println("adlkjsdoifj");
+    }
+
 
 }

@@ -43,12 +43,6 @@ public class WeatherForecastTest {
 		assertNotEquals(predccionTiempo, mensajeError);
 	}
 
-	@Test
-	@DisplayName("Probando con una fecha anterior (30 días)")
-	public void testFechaAnteriorLejana() throws IOException {
-		String predccionTiempo = weatherForecast.getCityWeather("Madrid", new Date(new Date().getTime() - (1000 * 60 * 60 * 24 * 30)));
-		assertNotEquals(predccionTiempo, mensajeError);
-	}
 
 	@Test
 	@DisplayName("Probando con una fecha posterior (30 días)")
@@ -64,13 +58,7 @@ public class WeatherForecastTest {
 		assertNotEquals(predccionTiempo, mensajeError);
 	}
 
-	@Test
-	@DisplayName("Probando con una ciudad inválida")
-	public void testCiudadInvalida() throws IOException {
-		String predccionTiempo = weatherForecast.getCityWeather("Alcachofa", new Date());
-		System.out.println(predccionTiempo + " aasasasasas");
-		assertNotEquals(predccionTiempo, mensajeError);
-	}
+
 
 
 
