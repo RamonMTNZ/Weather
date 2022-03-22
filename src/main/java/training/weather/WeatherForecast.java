@@ -15,7 +15,7 @@ import org.json.JSONObject;
 
 public class WeatherForecast {
 
-	public String getCityWeather(String ciudad, Date fecha) throws IOException {
+	public String getClimaDeCiudad(String ciudad, Date fecha) throws IOException {
 
 
 		if (fecha == null) {
@@ -47,7 +47,7 @@ public class WeatherForecast {
 			}
 		}
 		else {
-			return "Por favor, seleccione una fecha a partir de hoy en los proximos 6 días.";
+			return "Por favor, seleccione una fecha entre la fecha de hoy y los próximos 6 días.";
 		}
 		return "";
 	}
@@ -55,7 +55,8 @@ public class WeatherForecast {
 	private boolean fechaEsValida(Date fecha){
 		// Comprueba que la fecha este en el rango de fechas que metaweather calcula el clima (6 días a partir de hoy)
 		Date fechaEn6Dias = new Date(new Date().getTime() + (1000 * 60 * 60 * 24 * 6));
-		return fecha.before(fechaEn6Dias);
+		Date fechaHaceUnMinuto = new Date(new Date().getTime() - (1000*60));
+		return fecha.before(fechaEn6Dias) && fecha.after(fechaHaceUnMinuto);
 	}
 
 	private String devuelveStringDeEnlace(String enlace) throws IOException {
@@ -72,7 +73,7 @@ public class WeatherForecast {
 	}
 
 	private JSONArray devuelveArrayJSONSegunCategoria(String info, String categoria){
-		// Devuelve la categoria pasada como parametro del array JSON del String pasado como parametro.
+		// Convierte el String a JSONArray y devuelve la categoria seleccionada
 		return new JSONObject(info).getJSONArray(categoria);
 	}
 
